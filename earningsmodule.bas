@@ -24,6 +24,16 @@ Function zacks()
     End With
     Set zacks = zacks_
 End Function
+Function earnwhisp()
+    Dim ew_ As site_class
+    Set ew_ = New site_class
+    With ew_
+        .pre_tar_arr(0) = "Earnings Release Date"",""startDate"" : """
+        '.pre_tar_arr(1) = "</sup>"
+        .aft_target = "T2"
+    End With
+    Set earnwhisp = ew_
+End Function
 Function yahoo_url(ByVal symbol As String)
     Dim url As String
     url = "http://finance.yahoo.com/q?s=" & LCase(symbol)
@@ -33,6 +43,11 @@ Function zacks_url(ByVal symbol As String)
     Dim url As String
     url = "http://www.zacks.com/stock/quote/" & UCase(symbol)
     zacks_url = url
+End Function
+Function ew_url(ByVal symbol As String)
+    Dim url As String
+    url = "https://www.earningswhispers.com/stocks/" & LCase(symbol)
+    ew_url = url
 End Function
 Sub symbols()
     Dim yahoo_site As site_class
@@ -50,9 +65,10 @@ Sub symbols()
     With ws
         lr = .Cells(Rows.Count, "A").End(xlUp).Row
         If lr < rowstart Then Exit Sub
-        .Range("B2:C" & lr).ClearContents
+        .Range("B2:D" & lr).ClearContents
         .Range("B1").Value = "Yahoo"
         .Range("C1").Value = "Zacks"
+        .Range("D1").Value = "Earnings Whisper"
         For Each sym In ws.Range("A2:A" & lr)
             '''''yahoo
             eclass.url = yahoo_url(sym)
@@ -65,10 +81,37 @@ Sub symbols()
             On Error Resume Next
             ws.Range("C" & sym.Row).Value = eclass.getDate 'column C
             If Err.Number > 0 Then
-                'msgbox(err.Number)
                 ws.Range("C" & sym.Row).Value = "error"
             End If
             '''''
+            '''''ew
+            eclass.url = ew_url(sym)
+            eclass.site = earnwhisp
+            Err.Clear
+            On Error Resume Next
+            ws.Range("D" & sym.Row).Value = eclass.getDate
+                If Err.Number > 0 Then
+                ws.Range("D" & sym.Row).Value = "error"
+            End If
+            ''''''
+            disable
+            Application.Wait (Now + TimeValue("00:00:01"))
+            enable
         Next sym
     End With
 End Sub
+Sub disable()
+    With Application
+        .ScreenUpdating = False
+        .EnableEvents = False
+        .Calculation = xlCalculationManual
+    End With
+End Sub
+Sub enable()
+    With Application
+        .ScreenUpdating = True
+        .EnableEvents = True
+        .Calculation = xlCalculationAutomatic
+    End With
+End Sub
+
