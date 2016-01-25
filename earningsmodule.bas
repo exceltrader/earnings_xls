@@ -1,36 +1,33 @@
 Attribute VB_Name = "earningsmodule"
 Option Explicit
 Function yahoo()
-    '''''
-    Dim search(0 To 2) As String
-    search(0) = "Earnings Date:"
-    search(1) = """>"
-    search(2) = "test2"
-    Dim after_target As String
-    after_target = "x"
-    ''''''
     Dim yahoo_ As site_class
     Set yahoo_ = New site_class
     With yahoo_
-        .pre_tar_arr = search
-        .aft_target = "x"
+        'a unique html string, near the date we want
+        .pre_tar_arr(0) = "Earnings Date:"
+        'another unique html string between .pre_tar_arr(0) and the date we want
+        .pre_tar_arr(1) = "yfnc_tabledata1"">"
+        'add more as needed until the value is the string before date
+        '.pre_tar_arr(2) = "any string before the date"
+        .aft_target = "<" 'The first character after the date we want
     End With
     Set yahoo = yahoo_
-End Function
-Function yahoo_url(ByVal symbol As String)
-    Dim url As String
-    url = "http://finance.yahoo.com/q?s=" & LCase(symbol)
-    yahoo_url = url
 End Function
 Function zacks()
     Dim zacks_ As site_class
     Set zacks_ = New site_class
     With zacks_
-        .pre_target_arr(0) = "XXXXXXEarnings Date:"
-        .pre_target_arr(1) = """>"
-        .aft_target = "<span"
+        .pre_tar_arr(0) = "Earnings Date"
+        .pre_tar_arr(1) = "</sup>"
+        .aft_target = "</td"
     End With
-    zacks = zacks_
+    Set zacks = zacks_
+End Function
+Function yahoo_url(ByVal symbol As String)
+    Dim url As String
+    url = "http://finance.yahoo.com/q?s=" & LCase(symbol)
+    yahoo_url = url
 End Function
 Function zacks_url(ByVal symbol As String)
     Dim url As String
@@ -43,12 +40,9 @@ Sub symbols()
     Dim sym As Range
     Dim lr As Long
     Dim ws As Worksheet
-    'Dim url1() As String 'yahoo url
-    'Dim url2() As String 'zacks url
     Const rowstart = 2 'row of first symbol
     Dim objWinHttp As Object
-    Dim url As String
-    'Dim res As String
+    'Dim url As String
     Dim eclass As parse_class
     Set eclass = New parse_class
     Set objWinHttp = CreateObject("WinHttp.WinHttpRequest.5.1")
@@ -56,36 +50,25 @@ Sub symbols()
     With ws
         lr = .Cells(Rows.Count, "A").End(xlUp).Row
         If lr < rowstart Then Exit Sub
-        ReDim url1(0 To lr - rowstart)
-        ReDim url2(0 To lr - rowstart)
+        .Range("B2:C" & lr).ClearContents
+        .Range("B1").Value = "Yahoo"
+        .Range("C1").Value = "Zacks"
         For Each sym In ws.Range("A2:A" & lr)
-        
-        
-
-
-
+            '''''yahoo
             eclass.url = yahoo_url(sym)
-   
-            'Set yahoo_site = yahoo
             eclass.site = yahoo
-                
-                
-            
-            'eclass.sitetype = yahoo
-            ws.Range("B" & sym.Row).Value = eclass.getDate
-            
-
-            
-            
-            
-            
+            ws.Range("B" & sym.Row).Value = eclass.getDate 'column B
+            '''''zacks
+            eclass.url = zacks_url(sym)
+            eclass.site = zacks
+            Err.Clear
+            On Error Resume Next
+            ws.Range("C" & sym.Row).Value = eclass.getDate 'column C
+            If Err.Number > 0 Then
+                'msgbox(err.Number)
+                ws.Range("C" & sym.Row).Value = "error"
+            End If
+            '''''
         Next sym
     End With
 End Sub
-
-
-
-
-
-
-
