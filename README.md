@@ -2,7 +2,7 @@
 
 ##Instructions:
 
-1. [Download ] (http://exceltrader.net/1412/earnings-xls/)
+1. [Download ] (http://exceltrader.net/1412/earnings_2016-xls/), Save and Open earnings_2016.xls
 2. Enter Symbols in Column A
 3. Press "Get Earnings".
 
